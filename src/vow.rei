@@ -47,7 +47,11 @@ let sideEffect: ('a => unit, t('a, handled)) => unit;
 /***
  * Catches and handles the rejection of a backing promise.
  */
+<<<<<<< HEAD
 let onError: (unit => t('a, 'status), t('a, unhandled)) => t('a, 'status);
+=======
+let onError: (Js.Promise.error => t 'a 'status) => t 'a unhandled => t 'a 'status;
+>>>>>>> feat: expose Js.Promise.error in onError
 
 
 /***
@@ -84,9 +88,9 @@ module type ResultType = {
   let sideEffect:
     ([ | `Success('value) | `Fail('error)] => unit, t('value, 'error, handled)) => unit;
   let onError:
-    (unit => t('error, 'value, 'status), t('error, 'value, unhandled)) =>
+    (Js.Promise.error => t('error, 'value, 'status), t('error, 'value, unhandled)) =>
     t('error, 'value, 'status);
-  let wrap: (Js.Promise.t('value), unit => 'error) => t('value, 'error, handled);
+  let wrap: (Js.Promise.t('value), Js.Promise.error => 'error) => t('value, 'error, handled);
   let unwrap:
     ([ | `Success('value) | `Fail('error)] => vow('a, 'status), t('value, 'error, handled)) =>
     vow('a, 'status);
