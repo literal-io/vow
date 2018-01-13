@@ -59,6 +59,8 @@ module type ResultType = {
   let wrap:
     (Js.Promise.t('value), Js.Promise.error => 'error) =>
     t('value, 'error, handled);
+  let wrapOption:
+    (unit => 'error, option('value)) => t('value, 'error, handled);
   let unwrap:
     (
       [ | `Success('value) | `Fail('error)] => vow('a, 'status),
@@ -115,6 +117,11 @@ module Result: ResultType = {
     Vow.wrap(promise)
     |> Vow.flatMapUnhandled(x => return(x))
     |> onError(err => fail(handler(err)));
+  let wrapOption = (handler, option) =>
+    switch option {
+    | Some(value) => return(value)
+    | None => fail(handler())
+    };
   let unwrap = (transform, vow) => Vow.flatMap(transform, vow);
   module Infix = {
     let (>>=) = (v, t) => flatMap(t, v);
