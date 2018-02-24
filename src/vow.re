@@ -69,6 +69,8 @@ module type ResultType = {
       t('value, 'error, handled)
     ) =>
     vow('a, 'status);
+  let unsafeUnwrap:
+    ('error => exn, t('value, 'error, 'status)) => Js.Promise.t('value);
   module Infix: {
     let (>>=):
       (t('a, 'error, handled), 'a => t('b, 'error, 'status)) =>
@@ -125,6 +127,15 @@ module Result: ResultType = {
     | None => fail(handler())
     };
   let unwrap = (transform, vow) => Vow.flatMap(transform, vow);
+  let unsafeUnwrap = (onError, vow) =>
+    Js.Promise.then_(
+      x =>
+        switch x {
+        | `Success(x) => Js.Promise.resolve(x)
+        | `Fail(x) => Js.Promise.reject(onError(x))
+        },
+      vow.Vow.promise
+    );
   module Infix = {
     let (>>=) = (v, t) => flatMap(t, v);
     let (>|=) = (v, t) => map(t, v);

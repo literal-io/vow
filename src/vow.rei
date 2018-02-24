@@ -123,6 +123,8 @@ module type ResultType = {
       t('value, 'error, handled)
     ) =>
     vow('a, 'status);
+  let unsafeUnwrap:
+    ('error => exn, t('value, 'error, 'status)) => Js.Promise.t('value);
   module Infix: {
     let (>>=):
       (t('a, 'error, handled), 'a => t('b, 'error, 'status)) =>
