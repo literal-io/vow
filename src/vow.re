@@ -3,6 +3,7 @@ module Vow = {
   type unhandled;
   type t('a, 'status) = {promise: Js.Promise.t('a)};
   let return = x => {promise: Js.Promise.resolve(x)};
+  let fail = x => {promise: Js.Promise.reject(x)};
   let flatMap = (transform, vow) => {
     promise: Js.Promise.then_(x => transform(x).promise, vow.promise)
   };
@@ -23,6 +24,7 @@ module Vow = {
   let wrap = promise => {promise: promise};
   let unsafeWrap = promise => {promise: promise};
   let unwrap = ({promise}) => promise;
+  let unsafeUnwrap = ({promise}) => promise;
 };
 
 module type ResultType = {

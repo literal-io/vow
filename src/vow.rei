@@ -10,6 +10,11 @@ type t('a, 'status);
  */
 let return: 'a => t('a, handled);
 
+/**
+ * Returns a rejected value wrapped in a vow.
+ */
+let fail: exn => t('a, unhandled);
+
 
 /***
  * Maps a handled vow with value of type 'a to a vow returned by the transform function
@@ -70,6 +75,12 @@ let unsafeWrap: Js.Promise.t('a) => t('a, handled);
  * Returns the underlying JS Promise.
  */
 let unwrap: t('a, handled) => Js.Promise.t('a);
+
+/**
+ * Returns the underlying JS Promise. Use this function if you need to bind to a
+ * JS API that will handle the possibly rejected promise.
+ */
+let unsafeUnwrap: t('a, unhandled) => Js.Promise.t('a);
 
 module type ResultType = {
   type result('value, 'error);
