@@ -25,6 +25,34 @@ module Vow = {
   let unsafeWrap = promise => {promise: promise};
   let unwrap = ({promise}) => promise;
   let unsafeUnwrap = ({promise}) => promise;
+  let all2 = ((v1, v2)) =>
+    v1
+    |> flatMap(v1Result =>
+         v2 |> flatMap(v2Result => return((v1Result, v2Result)))
+       );
+  let all3 = ((v1, v2, v3)) =>
+    all2((v1, v2))
+    |> flatMap(((v1Result, v2Result)) =>
+         v3 |> flatMap(v3Result => return((v1Result, v2Result, v3Result)))
+       );
+  let all4 = ((v1, v2, v3, v4)) =>
+    all3((v1, v2, v3))
+    |> flatMap(((v1Result, v2Result, v3Result)) =>
+         v4
+         |> flatMap(v4Result =>
+              return((v1Result, v2Result, v3Result, v4Result))
+            )
+       );
+  let rec all = vows =>
+    switch (vows) {
+    | [head, ...tail] =>
+      all(tail)
+      |> flatMap(tailResult =>
+           head |> flatMap(headResult => return([headResult, ...tailResult]))
+         )
+    | [] => return([])
+    };
+
 };
 
 module type ResultType = {
@@ -71,7 +99,34 @@ module type ResultType = {
     vow('a, 'status);
   let unsafeUnwrap:
     ('error => exn, t('value, 'error, 'status)) => Js.Promise.t('value);
+
+  let all2:
+    ((t('v1, 'error, handled), t('v2, 'error, handled))) =>
+    t(('v1, 'v2), 'error, handled);
+  let all3:
+    (
+      (
+        t('v1, 'error, handled),
+        t('v2, 'error, handled),
+        t('v3, 'error, handled),
+      )
+    ) =>
+    t(('v1, 'v2, 'v3), 'error, handled);
+  let all4:
+    (
+      (
+        t('v1, 'error, handled),
+        t('v2, 'error, handled),
+        t('v3, 'error, handled),
+        t('v4, 'error, handled),
+      )
+    ) =>
+    t(('v1, 'v2, 'v3, 'v4), 'error, handled);
+  let all:
+    list(t('value, 'error, handled)) => t(list('value), 'error, handled);
+
   module Infix: {
+
     let (>>=):
       (t('a, 'error, handled), 'a => t('b, 'error, 'status)) =>
       t('b, 'error, 'status');
@@ -136,6 +191,33 @@ module Result: ResultType = {
         },
       vow.Vow.promise
     );
+  let all2 = ((v1, v2)) =>
+    v1
+    |> flatMap(v1Result =>
+         v2 |> flatMap(v2Result => return((v1Result, v2Result)))
+       );
+  let all3 = ((v1, v2, v3)) =>
+    all2((v1, v2))
+    |> flatMap(((v1Result, v2Result)) =>
+         v3 |> flatMap(v3Result => return((v1Result, v2Result, v3Result)))
+       );
+  let all4 = ((v1, v2, v3, v4)) =>
+    all3((v1, v2, v3))
+    |> flatMap(((v1Result, v2Result, v3Result)) =>
+         v4
+         |> flatMap(v4Result =>
+              return((v1Result, v2Result, v3Result, v4Result))
+            )
+       );
+  let rec all = vows =>
+    switch (vows) {
+    | [head, ...tail] =>
+      all(tail)
+      |> flatMap(tailResult =>
+           head |> flatMap(headResult => return([headResult, ...tailResult]))
+         )
+    | [] => return([])
+    };
   module Infix = {
     let (>>=) = (v, t) => flatMap(t, v);
     let (>|=) = (v, t) => map(t, v);
